@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Canvas</title>
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="dist/css/custom.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    </head>
+    <body>
+<!--     	<form action= "cnvtoserver.php" method="post">
+ --> 			Name:  <input type="text" id="text_cnv" name="user" size="32" maxlength="250" placeholder="blank" ><br>
+<!--  			<input type="hidden" name="pict" id="pict" />
+ --> 	</br>
+ 		<input type="submit" name="saveImage" value="Save Image" onclick="download()"><br>
+ 		<textarea rows="4" cols="50" name="listNames"></textarea>
+ 		<input type="submit" name="saveImages" value="Save Images" onclick="downloadall()">
+ 		<input type="submit" name="creategcodes" value="Create Gcodes" onclick="creategcodes()">
+		</form>
+		<br>
+			<img id='snapshotImageElement' width="900" height="437.26"/>
+    		<canvas id="myCanvas" width="1" height="1" style="display: none"></canvas>
+<script>
+  var canvas = document.getElementById('myCanvas');
+  var context = canvas.getContext('2d', {alpha:false });
+
+  var img2 = new Image();
+//  img2.onload = main;
+  img2.src = 'logo.png';
+
+
+function updateNameImage() {
+   snapshotImageElement.src = canvas.toDataURL();
+}
+
+
+function clearCanvas() {
+  var ctx = myCanvas.getContext('2d', {alpha:false});     // gets reference to canvas context
+  ctx.beginPath();    // clear existing drawing paths
+  ctx.save();         // store the current transformation matrix
+
+  // Use the identity matrix while clearing the canvas
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
+  ctx.restore();        // restore the transform
+}
+
+function changeCanvas(input){
+//	var input = "toon";
+	var name = input.toUpperCase();
+
+	var textBlur = 6.65;
+	var blockBlur = 7.2;
+	
+	var canvasWidth = 2048; //900
+	var canvasHeight = 995; //437.26
+
+	myCanvas.width = canvasWidth //+ (2 * blockBlur);
+	myCanvas.height = canvasHeight //+ (2 * blockBlur);
+
+	var rows = 4;
+	var cols = 16;
+
+
+	if (name.length == 2 || name.length == 4 || name.length == 8) {
+		var cols = 16;
+		var rows = 6;
+	}
+
+	if (name.length == 3 || name.length == 6 || name.length == 9) {
+		var cols = 18;
+		var rows = 6;
+	}
+
+	if (name.length == 4) {
+		var cols = 16;
+		var rows = 8;
+	}
+
+	if (name.length == 5) { //tekst dunner
+		var cols = 20;
+		var rows = 5;
+	}
+
+	if (name.length == 7) {
+		var cols = 14;
+		var rows = 7;
+	}
+
+	if (name.length == 10) { //tekst dunner
+		var cols = 20;
+		var rows = 6;
+	}
+
+	if (name.length == 11) { //tekst dunner
+		var cols = 22;
+		var rows = 6;
+	}
+
+	if (name.length >= 12) {
+		var cols = name.length;
+		var rows = 8; 
+		if (cols % 2 == 1){
+			cols++;
+		}
+	}
+
+	// if (name.length >=20){
+	// 	context.font = getFont();
+	// 	context.textAlign = 'center';
+	// 	context.textBaseline = 'middle';
+	// }
+
+	var blockWidth = canvasWidth / cols;
+	var blockHeight = canvasHeight / rows;
+	// var blockColor = "000000";
+
+	// var circleRadi = 20; 
+	// var circleColor = "000000";
+
+	context.rect(0,0,canvasWidth,canvasHeight);
+	context.fillStyle = 'white'; 
+	context.fill();
+
+
+	// zwarte blokjes tekenen
+	for (var rownr = 1; rownr-2 < rows+1; rownr++){
+		for (var colnr = 1; colnr-1 < cols+1; colnr++){
+ 		  if (rownr % 2 == 0){ // even
+			colnr++ // = ^2 
+		  }
+		  context.beginPath();
+		  var blockXpos = ((colnr-1) * blockWidth) - blockWidth ; // (1~16*56,25)-56,25 + 8
+		  var blockYpos = ((rownr-1) * blockHeight) - blockHeight ; // (1~8*56,25)-56,25 + 8
+		  context.rect(blockXpos, blockYpos, blockWidth, blockHeight); // x, y, width, height
+//		  context.shadowColor = 'black'; 
+		  context.shadowColor = '#505050'; 
+		  context.shadowBlur = blockBlur; // = 8
+//		  context.fillStyle = 'black';
+		  context.fillStyle = '#505050';
+		  context.fill();
+
+		  // waarom hier?
+		  if (colnr % 2 == 1){ // oneven 1~16 
+			colnr++;
+		  }
+
+			// switch(rownr%2 == 0){
+			// 	case 0: colnr++; context.fillStyle = "white"; break;
+			// 	case 1: colnr++; context.fillStyle = "white"; break; 
+			// }
+
+			// switch(colnr%2 == 1){
+		 // 		case 0: colnr++; context.fillStyle = "white"; break;
+		 // 		case 1: context.fillStyle = "white"; break; 	
+			// }
+		  // if (colnr % 2 == 0){
+			 //  if (rownr % 2 == 0){
+			 //  	  context.shadowColor = 'black'; 
+				//   context.shadowBlur = blockBlur;
+				//   context.fillStyle = 'black';
+			 //  }
+			 //  if (rownr % 2 == 1){
+			 //  	//   context.shadowColor = 'white'; 
+				//   // context.shadowBlur = blockBlur;
+				//   context.fillStyle = 'white';
+			 //  }
+		  // }
+		  // if (colnr % 2 == 1){
+			 //  if (rownr % 2 == 0){
+			 //  	//   context.shadowColor = 'white'; 
+				//   // context.shadowBlur = blockBlur;
+				//   context.fillStyle = 'white';
+			 //  }
+			 //  if (rownr % 2 == 1){
+			 //  	  context.shadowColor = 'black'; 
+				//   context.shadowBlur = blockBlur;
+				//   context.fillStyle = 'black';
+			 //  }
+		  // }
+		  // context.fill(); 
+
+			// if (rownr % 2 == 0){ // even
+			// 	context.fillStyle = 'red';
+			// }
+
+		}
+	}
+ // for(x = 0; x < W; x += advance) {
+ //    for(y = 0; y < H; y += advance) {
+ //      ctx.save();
+ //      ctx.translate(x, y);      
+ //      switch(((x+y)/advance)% 2) {
+ //        case 0: ctx.fillStyle = "black"; break;
+ //        case 1: ctx.fillStyle = "white"; break;
+ //        // case 2: ctx.fillStyle = "green"; break;
+ //        // case 3: ctx.fillStyle = "blue"; break;
+ //      }
+ //      ctx.translate(0,0);
+ //      ctx.fill(p);
+ //      ctx.restore();
+ //    }
+
+	//context.arc(x,y,r,sAngle,eAngle,counterclockwise)
+	//cirkels tekenen
+	// for (var rownr = 1; rownr <= rows; rownr++){ //i = y
+	//   for (var colnr = 1; colnr <= cols; colnr++){ // j = x
+	//   	if (rownr % 2 == 0){ //even 
+	//   	  colnr++ 
+	//   	}
+	//   	context.beginPath(); 
+	//   	var circleXpos = colnr*40-circleRadi; 
+	//   	var circleYpos = rownr*40-circleRadi; 
+	//   	context.arc(circleXpos, circleYpos, circleRadi,0,Math.PI*2, true);
+
+	//   	//        ctx.arc(10+b.c_x+j*20,10+i*20,10,0,Math.PI*2, true);
+
+	//   	context.fillStyle = 'black'; 
+	//   	context.fill(); 
+	//   	if (colnr % 2 == 1){ // oneven 1~16 
+	//  		colnr++ 
+	//  	  }
+	//   }
+	// }
+
+	// characters tekst tekenen
+	for (var rownr = 1; rownr <= rows; rownr++){
+		var charPos = rownr-1;
+		if (charPos > name.length-1 + name.length){
+			var charPos = charPos - name.length - name.length;
+		}
+		if (charPos > name.length-1){
+			var charPos = charPos - name.length;
+		}
+
+		for (var colnr = 1; colnr <= cols; colnr++){
+		  var textXpos = ((colnr) * blockWidth) - (blockWidth/2) ;
+		  var textYpos = ((rownr) * blockHeight) - (blockHeight/2) ;
+			  
+		  var fontBase = 39; //(900/16) 
+		  var fontSize = 20; 
+
+		  function getFont(){
+		  var ratio = fontSize / fontBase; 
+		  var size = blockWidth * ratio; 
+//			  console.log (fontSize); 
+		  return (size|0);
+		  }
+
+		  // (function(callback){ console.log(callback.toString()); })(getFont);
+
+		  var nsize = getFont();
+//		  console.log(nsize);
+//		  context.font = Blockwidth+'pt Calibri';
+		  context.font = nsize + 'pt Arial Black'; 
+//		  console.log(nsize);
+		  context.textAlign = 'center';
+		  context.textBaseline = 'middle';
+
+		// if (name.length >= 12) {
+		// 	if (cols % 2 == 1){
+		// 		charPos++;
+		// 	}
+		// }
+
+		
+		  // if (name.length >= 20){
+			 //  var nsize = getFont();
+			 //  console.log(nsize);
+		  // 	  context.font = nsize + 'pt Calibri'; 
+		  // }
+		  if (colnr % 2 == 0){
+			  if (rownr % 2 == 0){
+				  context.shadowColor = "white";
+//				  context.shadowColor = "#505050";
+				  context.shadowBlur = textBlur;
+				  context.fillStyle = 'white';
+				  context.fillText(name.charAt(charPos), textXpos, textYpos);
+			  }
+			  if (rownr % 2 == 1){
+//				  context.shadowColor = "black";
+				  context.shadowColor = '#505050';
+				  context.shadowBlur = textBlur;
+//				  context.fillStyle = 'black';
+				  context.fillStyle = '#505050';
+				  context.fillText(name.charAt(charPos), textXpos, textYpos);
+			  }
+		  }
+		  if (colnr % 2 == 1){
+			  if (rownr % 2 == 0){
+//				  context.shadowColor = "black";
+				  context.shadowColor = '#505050';
+				  context.shadowBlur = textBlur;
+//				  context.fillStyle = 'black';
+				  context.fillStyle = '#505050';
+				  context.fillText(name.charAt(charPos), textXpos, textYpos);
+			  }
+			  if (rownr % 2 == 1){
+				  context.shadowColor = "white";
+//				  context.shadowColor = "#505050";
+				  context.shadowBlur = textBlur;
+				  context.fillStyle = 'white';
+				  context.fillText(name.charAt(charPos), textXpos, textYpos);
+			  }
+		  }
+
+		  var charPos = charPos + 1;
+		  if (charPos > name.length-1){
+			var charPos = 0;
+		  }
+
+		}
+	}
+	context.globalAlpha = 1;
+	//logo aan of uit...
+	//context.drawImage(img2, 0, 0);
+	updateNameImage();
+}
+
+function creategcodes(){
+		$.ajax({
+		type: "POST",
+		url: "creategcode.php",
+		data: {},
+		success: function(value){
+		console.log('... succes!');
+	  }
+	  } ).done(function(o) {
+	  console.log('saved'); 
+	  });
+}
+
+
+function downloadall(){
+	var lines = $('textarea').val().split('\n');
+	for(var i = 0;i < lines.length;i++){
+		clearCanvas();      // clears the canvas
+		changeCanvas(lines[i]);
+    	//download()//code here using lines[i] which will give you each line
+		var pict = canvas.toDataURL("image/png");
+		var user = lines[i]; 
+		console.log(pict); 
+		console.log(user);
+	  // var str = $("form").serialize(); 
+	  // var dataString ={formData: str, imgBase64: pict};
+	  // var dataString = 'imgBase64=' + pict + '&user=' + name;
+
+		$.ajax({
+		type: "POST",
+		url: "imgtoserver.php",
+		data: {imgBase64: pict, user: user},
+		success: function(value){
+		console.log('... succes!');
+	  }
+	  } ).done(function(o) {
+	  console.log('saved'); 
+	  });
+
+	}
+}
+
+function download(){
+  var pict = canvas.toDataURL("image/png");
+  var user = document.getElementById('text_cnv').value; 
+  console.log(pict); 
+  console.log(user);
+  // var str = $("form").serialize(); 
+  // var dataString ={formData: str, imgBase64: pict};
+  // var dataString = 'imgBase64=' + pict + '&user=' + name;
+
+  $.ajax({
+  type: "POST",
+  url: "imgtoserver.php",
+  data: {imgBase64: pict, user: user},
+  success: function(value){
+   console.log('... succes!');
+  }
+  } ).done(function(o) {
+  console.log('saved'); 
+  });
+}
+
+
+document.getElementById('text_cnv').onkeyup = function() {
+//document.getElementById('text_cnv').onchange = function() {
+  clearCanvas();      // clears the canvas
+  changeCanvas(this.value);
+//alert ("tdatadt");
+}
+
+window.onload = changeCanvas("name");
+//window.onload = clearCanvas;
+
+</script> 
+
+
+</body>
+</html>
